@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cat and Dog Click Game</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f0f8ff;
+            overflow: hidden;
+        }
+
+        #stats {
+            position: fixed;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px;
+            font-size: 24px;
+            font-weight: bold;
+            display: flex;
+            gap: 30px;
+        }
+
+        #gameArea {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .animal {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <!-- Score and Lives Counter at the Top -->
+    <div id="stats">
+        <span id="score">Score: 0</span>
+        <span id="lives">Lives: 3</span>
+    </div>
+    
+    <!-- Game Area -->
+    <div id="gameArea"></div>
+
+    <script>
+        const gameArea = document.getElementById("gameArea");
+        let score = 0;
+        let lives = 3;
+        let dogCount = 0; // Count of currently visible dogs
+        let speed = 5; // Initial speed
+
+        // Create the audio elements for dog bark and cat meow
+        const dogBark = new Audio('dog-bark-179915.mp3');
+        const catMeow = new Audio('fiji-meow-01-86859.mp3');
+
+        // Update score and lives displayed on screen
+        function updateStats() {
+            document.getElementById("score").textContent = `Score: ${score}`;
+            document.getElementById("lives").textContent = `Lives: ${lives}`;
+        }
+
+        // Create an animal (cat or dog)
+        function createAnimal(type) {
+            if (type === "dog" && dogCount >= 25) return; // Limit max dogs to 25
+
+            const animal = document.createElement("img");
+            animal.className = "animal";
+            animal.src = type === "cat" 
+                ? "cat.jpeg" // Use local file cat.jpg
+                : "dog.jpeg"; // Use local file dog.jpg
+
+            animal.style.top = `${Math.random() * (window.innerHeight - 80)}px`;
+            animal.style.left = `${Math.random() * (window.innerWidth - 80)}px`;
+
+            gameArea.appendChild(animal);
+
+            animal.addEventListener("click", () => {
+                if (type === "cat") {
+                    score++;
+                    catMeow.play(); // Play the cat sound when clicked
+                    if (score % 10 === 0) {
+                        lives++;
+                        speed += 2; // Increase speed by 0.5 for every 10 points
+                    }
+                } else {
+                    lives--;
+                    dogBark.play(); // Play the dog sound when clicked
+                    if (lives === 0) {
+                        alert("Game Over!");
+                        location.reload(); // Reload game when game over
+                    }
+                }
+                updateStats();
+                animal.remove();
+            });
+
+            dogCount = document.querySelectorAll('.animal[src*="dog"]').length; // Count current dogs
+            moveAnimal(animal);
+        }
+
+        // Move animal across the screen with increased speed over time
+        function moveAnimal(animal) {
+            let direction = Math.random() < 0.5 ? 1 : -1;
+            let animalSpeed = speed; // Use current speed for this animal's movement
+            let posX = Math.random() * (window.innerWidth - 80);
+            animal.style.left = `${posX}px`;
+
+            function animate() {
+                if (posX + 80 >= window.innerWidth || posX <= 0) {
+                    direction *= -1;
+                }
+                posX += animalSpeed * direction;
+                animal.style.left = `${posX}px`;
+                requestAnimationFrame(animate);
+            }
+
+            animate();
+        }
+
+        // Create a random animal every second
+        setInterval(() => createAnimal(Math.random() < 0.5 ? "cat" : "dog"), 1000);
+    </script>
+</body>
+</html>
